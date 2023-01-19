@@ -34,3 +34,4 @@ build/
 
 ### Dev spec ###
 .env
+secrets.properties
