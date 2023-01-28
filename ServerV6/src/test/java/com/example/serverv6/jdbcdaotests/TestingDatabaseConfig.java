@@ -1,9 +1,11 @@
-package com.insulinhero.serverv5;
+package com.example.serverv6.jdbcdaotests;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -14,18 +16,27 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 @Configuration
+@PropertySource("classpath:application.properties")
 public class TestingDatabaseConfig {
-    private static final String DB_HOST =
+
+    @Value("testing.database.host")
+    private final String DB_HOST =
             Objects.requireNonNullElse(System.getenv("DB_HOST"), "localhost");
-    private static final String DB_PORT =
+
+    private final String DB_PORT =
             Objects.requireNonNullElse(System.getenv("DB_PORT"), "5432");
-    private static final String DB_NAME =
-            Objects.requireNonNullElse(System.getenv("DB_NAME"), "final_capstone_test");
+
+    @Value("testing.database.name")
+    private final String DB_NAME =
+            Objects.requireNonNullElse(System.getenv("DB_NAME"), "insulin_hero_rebuild_db_test");
+
+
     private static final String DB_USER =
             Objects.requireNonNullElse(System.getenv("DB_USER"), "postgres");
+
+    @Value("integration.testing.password")
     private static final String DB_PASSWORD =
             Objects.requireNonNullElse(System.getenv("DB_PASSWORD"), "postgres1");
-
 
     private SingleConnectionDataSource adminDataSource;
     private JdbcTemplate adminJdbcTemplate;
@@ -35,8 +46,8 @@ public class TestingDatabaseConfig {
         if (System.getenv("DB_HOST") == null) {
             adminDataSource = new SingleConnectionDataSource();
             adminDataSource.setUrl("jdbc:postgresql://localhost:5432/postgres");
-            adminDataSource.setUsername("postgres");
-            adminDataSource.setPassword("postgres1");
+            adminDataSource.setUsername(DB_USER);
+            adminDataSource.setPassword(DB_PASSWORD);
             adminJdbcTemplate = new JdbcTemplate(adminDataSource);
             adminJdbcTemplate.update("DROP DATABASE IF EXISTS \"" + DB_NAME + "\";");
             adminJdbcTemplate.update("CREATE DATABASE \"" + DB_NAME + "\";");
@@ -47,16 +58,15 @@ public class TestingDatabaseConfig {
 
     @Bean
     public DataSource dataSource() throws SQLException {
-        if(ds != null) return ds;
+        if (ds != null) return ds;
 
         SingleConnectionDataSource dataSource = new SingleConnectionDataSource();
         dataSource.setUrl(String.format("jdbc:postgresql://%s:%s/%s", DB_HOST, DB_PORT, DB_NAME));
         dataSource.setUsername(DB_USER);
         dataSource.setPassword(DB_PASSWORD);
-        dataSource.setAutoCommit(false); //So we can rollback after each test.
+        dataSource.setAutoCommit(false);
 
         ScriptUtils.executeSqlScript(dataSource.getConnection(), new ClassPathResource("test-data.sql"));
-
         ds = dataSource;
         return ds;
     }

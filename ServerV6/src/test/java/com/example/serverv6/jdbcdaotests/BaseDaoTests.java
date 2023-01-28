@@ -1,4 +1,4 @@
-package com.insulinhero.serverv5;
+package com.example.serverv6.jdbcdaotests;
 
 import org.junit.After;
 import org.junit.runner.RunWith;
@@ -20,4 +20,6 @@ public abstract class BaseDaoTests {
     public void rollback() throws SQLException {
         dataSource.getConnection().rollback();
     }
+
+
 }
