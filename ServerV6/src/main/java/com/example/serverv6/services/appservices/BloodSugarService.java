@@ -32,5 +32,5 @@ public class BloodSugarService {
     private List<BloodSugar> getLastWeekBloodSugars(int userId) throws SQLException {
         return bloodSugarDao.getPreviousWeekBloodSugars(userId);
     }
-    
+
 }
